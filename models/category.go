@@ -7,7 +7,7 @@
 package models
 
 import (
-	_ "github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/orm"
 )
 
 type Category struct {
@@ -23,4 +23,22 @@ type Category struct {
 
 func (m *Category) TableName() string {
 	return TNCategory()
+}
+
+func (m *Category) GetCateGoryList(pid int, status int) (catList []Category, err error) {
+	qs := orm.NewOrm().QueryTable(m.TableName())
+	if pid > -1 {
+		qs.Filter("pid", pid)
+	}
+	if status == 0 || status == 1 {
+		qs.Filter("status", status)
+	}
+	_, err = qs.OrderBy("-status", "sort", "title").All(&catList)
+	return
+}
+
+func (m *Category) Find(cid int) (cate Category) {
+	cate.Id = cid
+	orm.NewOrm().Read(&cate)
+	return
 }

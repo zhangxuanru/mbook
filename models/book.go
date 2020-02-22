@@ -6,7 +6,14 @@
 */
 package models
 
-import "time"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/astaxie/beego/orm"
+)
 
 type Book struct {
 	BookId         int       `orm:"pk;auto" json:"book_id"`
@@ -36,4 +43,27 @@ type Book struct {
 
 func (m *Book) TableName() string {
 	return TNBook()
+}
+
+func NewBook() *Book {
+	return &Book{}
+}
+
+func (m *Book) HomeData(page int, size int, cid int, fields ...string) (books []Book, total int, err error) {
+	sqlFmt := "SELECT %v FROM %s b LEFT JOIN %s c on b.book_id=c.book_id where c.category_id=%d"
+	if len(fields) == 0 {
+		fields = append(fields, "book_id", "book_name", "identify", "conver", "order_index")
+	}
+	fieldStr := "b." + strings.Join(fields, ",b.")
+	sql := fmt.Sprintf(sqlFmt, fieldStr, m.TableName(), TNBookCategory(), cid)
+	totalStr := "COUNT(*) as cnt"
+	totalSql := fmt.Sprint(sqlFmt, totalStr, m.TableName(), TNBookCategory(), cid)
+
+	o := orm.NewOrm()
+	var params []orm.Params
+	if _, err := o.Raw(totalSql).Values(&params); err == nil && len(params) > 0 {
+		total, _ = strconv.Atoi(params[0]["cnt"].(string))
+	}
+	_, err = o.Raw(sql).QueryRows(&books)
+	return
 }

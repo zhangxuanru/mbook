@@ -21,7 +21,10 @@ func registerFunctions() {
 		if len(cdn) > 0 && strings.HasPrefix(p, "/") && strings.HasSuffix(cdn, "/") {
 			return cdn + string(p[1:])
 		}
-		return p
+		if len(cdn) > 0 && !strings.HasPrefix(p, "/") && strings.HasSuffix(cdn, "/") {
+			return cdn + "/" + p
+		}
+		return cdn + p
 	})
 	beego.AddFuncMap("cdncss", func(p string) string {
 		cdn := beego.AppConfig.DefaultString("cdncss", "")

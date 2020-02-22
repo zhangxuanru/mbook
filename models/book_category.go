@@ -12,3 +12,7 @@ type BookCategory struct {
 	BookId     int //书籍id
 	CategoryId int //分类id
 }
+
+func (m *BookCategory) TableName() string {
+	return TNBookCategory()
+}
